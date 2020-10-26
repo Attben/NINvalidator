@@ -29,6 +29,19 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
             }
         }
 
+        static bool IsValidBirthDay(int year, int month, int day)
+        {
+            //Number of days in each month
+            int[] daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+            if (IsLeapYear(year))
+            {
+                daysInMonth[1] = 29; //In leap years, february has 29 days.
+            }
+            /*The parameter "month" is expected to be >=1, so we subtract 1
+             * to correct the indexing of the array.*/
+            return (day >= 1 && day <= daysInMonth[month-1]);
+        }
+
         static bool IsValidBirthMonth(int month)
         {
             return (month >= 1 && month <= 12);
@@ -39,25 +52,54 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
             return (year >= 1753 && year <= 2020);
         }
 
-        static void ValidateNIN(string userInput)
+
+        static bool IsValidNIN(string userInput)
         {
             switch (userInput.Length)
             {
                 case 11:
                     //Not yet implemented
-                    break;
-                case 12:
+                    return false;
+                case 12: //12 digits in YYYYMMDDnnnc format
+                    int year = int.Parse(userInput.Substring(0,4));
+                    int month = int.Parse(userInput.Substring(4, 2));
+                    int day = int.Parse(userInput.Substring(6, 2));
+                    int ID = int.Parse(userInput.Substring(8, 3));
+                    int checksum = int.Parse(userInput.Substring(11));
 
-                    break;
+                    return (
+                        IsValidBirthYear(year) &&
+                        IsValidBirthMonth(month) &&
+                        IsValidBirthDay(year, month, day)
+                        );
                 default:
-                    Console.WriteLine("Incorrect format: User entered NIN of unsupported length.");
-                    break;
+                    throw new FormatException("Incorrect format: NIN has unsupported length.");
             }
         }
         static void Main(string[] args)
         {
-            Console.Write("Enter a National Identification Number (personnummer): ");
-            ValidateNIN(Console.ReadLine());
+            bool running = true;
+            do
+            {
+                try
+                {
+                    Console.Write("Enter a National Identification Number (personnummer): ");
+                    string input = Console.ReadLine();
+                    if (IsValidNIN(input))
+                    {
+                        Console.WriteLine(input + "Is a valid NIN. ✔");
+                    }
+                    else
+                    {
+                        Console.WriteLine(input + "Is an INVALID NIN. 🚫");
+                    }
+                    running = false;
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            } while (running);
         }
     }
 }

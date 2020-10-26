@@ -57,7 +57,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
         {
             switch (userInput.Length)
             {
-                case 11:
+                case 11: //10 digits plus a divider, in YYMMDD-nnnc format.
                     //Not yet implemented
                     return false;
                 case 12: //12 digits in YYYYMMDDnnnc format
@@ -66,15 +66,29 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                     int day = int.Parse(userInput.Substring(6, 2));
                     int ID = int.Parse(userInput.Substring(8, 3));
                     int checksum = int.Parse(userInput.Substring(11));
+                    string legalGender = LegalGenderFromID(ID);
 
-                    return (
+                    if (
                         IsValidBirthYear(year) &&
                         IsValidBirthMonth(month) &&
                         IsValidBirthDay(year, month, day)
-                        );
+                        )
+                    {
+                        Console.WriteLine("Legally, the owner of this NIN is considered " + legalGender);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 default:
                     throw new FormatException("Incorrect format: NIN has unsupported length.");
             }
+        }
+
+        static string LegalGenderFromID(int ID)
+        {
+            return (ID % 2 == 0) ? "Female" : "Male"; //Even ID: Female. Odd ID: Male.
         }
         static void Main(string[] args)
         {
@@ -87,11 +101,11 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                     string input = Console.ReadLine();
                     if (IsValidNIN(input))
                     {
-                        Console.WriteLine(input + "Is a valid NIN. ✔");
+                        Console.WriteLine(input + " Is a valid NIN. ✔");
                     }
                     else
                     {
-                        Console.WriteLine(input + "Is an INVALID NIN. 🚫");
+                        Console.WriteLine(input + " Is an INVALID NIN. 🚫");
                     }
                     running = false;
                 }

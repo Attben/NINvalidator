@@ -49,17 +49,24 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
 
         static bool IsValidBirthYear(int year)
         {
+            //Bounds are intentionally hardcoded to match the project specification.
             return (year >= 1753 && year <= 2020);
         }
 
 
-        static bool IsValidNIN(string userInput)
+        static void ValidateNIN(string userInput)
         {
             switch (userInput.Length)
             {
                 case 11: //10 digits plus a divider, in YYMMDD-nnnc format.
-                    //Not yet implemented
-                    return false;
+                    //Get the divider character from the input string
+                    char divider = userInput[userInput.Length - 5];
+                    string prefix;
+                    if (divider == '-')
+                    {
+                        //TODO
+                    }
+                    break;
                 case 12: //12 digits in YYYYMMDDnnnc format
                     int year = int.Parse(userInput.Substring(0,4));
                     int month = int.Parse(userInput.Substring(4, 2));
@@ -71,16 +78,18 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                     if (
                         IsValidBirthYear(year) &&
                         IsValidBirthMonth(month) &&
-                        IsValidBirthDay(year, month, day)
+                        IsValidBirthDay(year, month, day) &&
+                        LuhnChecksum(userInput.Substring(2)) == checksum 
                         )
                     {
+                        Console.WriteLine(userInput + " Is a valid NIN. ✔");
                         Console.WriteLine("Legally, the owner of this NIN is considered " + legalGender);
-                        return true;
                     }
                     else
                     {
-                        return false;
+                        Console.WriteLine(userInput + " Is an INVALID NIN. 🚫");
                     }
+                    break;
                 default:
                     throw new FormatException("Incorrect format: NIN has unsupported length.");
             }
@@ -90,6 +99,23 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
         {
             return (ID % 2 == 0) ? "Female" : "Male"; //Even ID: Female. Odd ID: Male.
         }
+
+        static int LuhnChecksum(string NIN)
+        {
+            int sum = 0;
+            //Disregard the final digit, since that's where the checksum goes.
+            for(int n = 0; n < (NIN.Length - 1); ++n)
+            {
+                //NIN[n] is a char representing a digit. Subtract '0' to get its value.
+                int currentDigit = NIN[n] - '0';
+                currentDigit *= (2 - (n % 2)); //rhs alternates between 2 and 1.
+                //currentDigit has at most 2 digits. Add its sum-of-digits to the total.
+                sum += currentDigit / 10;
+                sum += currentDigit % 10;
+            }
+            return (10 - (sum % 10)) % 10;
+        }
+
         static void Main(string[] args)
         {
             bool running = true;
@@ -98,15 +124,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                 try
                 {
                     Console.Write("Enter a National Identification Number (personnummer): ");
-                    string input = Console.ReadLine();
-                    if (IsValidNIN(input))
-                    {
-                        Console.WriteLine(input + " Is a valid NIN. ✔");
-                    }
-                    else
-                    {
-                        Console.WriteLine(input + " Is an INVALID NIN. 🚫");
-                    }
+                    ValidateNIN(Console.ReadLine());
                     running = false;
                 }
                 catch(Exception ex)

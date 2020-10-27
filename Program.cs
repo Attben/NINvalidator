@@ -66,6 +66,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                     //Its correct position is known from the format, so I've hardcoded it.
                     int dividerPos = NIN.Length - 5;
                     char divider = NIN[dividerPos];
+
                     if(!(divider == '-' || divider == '+'))
                     {
                         throw new FormatException("Incorrect format: User entered " +
@@ -126,7 +127,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                 //NIN[n] is a char representing a digit. Subtract '0' to get its value.
                 int currentDigit = NIN[n] - '0';
                 currentDigit *= (2 - (n % 2)); //rhs alternates between 2 and 1.
-                //currentDigit has at most 2 digits. Add its sum-of-digits to the total.
+                //currentDigit now has at most 2 digits. Add its sum-of-digits to the total.
                 sum += currentDigit / 10;
                 sum += currentDigit % 10;
             }
@@ -140,13 +141,23 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
             {
                 try
                 {
-                    Console.Write("Enter a National Identification Number (personnummer): ");
-                    ValidateNIN(Console.ReadLine());
-                    running = false;
+                    Console.Write("Enter a National Identification Number (personnummer)" +
+                        "or enter \"quit\" to quit: ");
+                    string input = Console.ReadLine();
+                    if (input == "quit")
+                    {
+                        running = false;
+                    }
+                    else
+                    {
+                        ValidateNIN(input);
+                    }
                 }
-                catch(Exception ex)
+                catch(FormatException ex)
                 {
                     Console.WriteLine(ex.Message);
+                    Console.WriteLine("Supported formats: " +
+                        "YYMMDD-nnnc YYMMDD+nnnc YYYYMMDDnnnc");
                 }
             } while (running);
         }

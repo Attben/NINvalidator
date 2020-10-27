@@ -10,17 +10,17 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
 
         static bool IsLeapYear(int year)
         {
-            if(year % 400 == 0)
+            if (year % 400 == 0)
             {
                 //Years divisible by 400 are leap years.
                 return true;
             }
-            else if(year % 100 == 0)
+            else if (year % 100 == 0)
             {
                 //Years divisible by 100 but not 400 are *not* leap years.
                 return false;
             }
-            else if(year % 4 == 0)
+            else if (year % 4 == 0)
             {
                 /*Years that don't meet the above conditions, but are
                  * divisible by 4, are leap years.*/
@@ -36,14 +36,14 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
         static bool IsValidBirthDay(int year, int month, int day)
         {
             //Number of days in each month
-            int[] daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+            int[] daysInMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
             if (IsLeapYear(year))
             {
                 daysInMonth[1] = 29; //In leap years, february has 29 days.
             }
             /*The parameter "month" is expected to be >=1, so we subtract 1
              * to correct the indexing of the array.*/
-            return (day >= 1 && day <= daysInMonth[month-1]);
+            return (day >= 1 && day <= daysInMonth[month - 1]);
         }
 
         static bool IsValidBirthMonth(int month)
@@ -67,7 +67,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                     int dividerPos = NIN.Length - 5;
                     char divider = NIN[dividerPos];
 
-                    if(!(divider == '-' || divider == '+'))
+                    if (!(divider == '-' || divider == '+'))
                     {
                         throw new FormatException("Incorrect format: User entered " +
                             "10-digit NIN that contained unsupported divider character "
@@ -86,7 +86,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                     NIN = (CURRENT_YEAR - age) + NIN.Substring(2); //Replace YY with YYYY.
                     goto case 12; //Fallthrough and let the 12-digit case handle the heavy lifting.
                 case 12: //12 digits in YYYYMMDDnnnc format
-                    int year = int.Parse(NIN.Substring(0,4)); //YYYY
+                    int year = int.Parse(NIN.Substring(0, 4)); //YYYY
                     int month = int.Parse(NIN.Substring(4, 2)); //MM
                     int day = int.Parse(NIN.Substring(6, 2)); //DD
                     int ID = int.Parse(NIN.Substring(8, 3)); //nnn
@@ -97,7 +97,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                         IsValidBirthYear(year) &&
                         IsValidBirthMonth(month) &&
                         IsValidBirthDay(year, month, day) &&
-                        LuhnChecksum(NIN.Substring(2)) == checksum 
+                        LuhnChecksum(NIN.Substring(2)) == checksum
                         )
                     {
                         Console.WriteLine(NIN + " Is a valid NIN. ✔");
@@ -122,7 +122,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
         {
             int sum = 0;
             //Disregard the final digit, since that's where the checksum goes.
-            for(int n = 0; n < (NIN.Length - 1); ++n)
+            for (int n = 0; n < (NIN.Length - 1); ++n)
             {
                 //NIN[n] is a char representing a digit. Subtract '0' to get its value.
                 int currentDigit = NIN[n] - '0';
@@ -153,7 +153,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                         ValidateNIN(input);
                     }
                 }
-                catch(FormatException ex)
+                catch (FormatException ex)
                 {
                     Console.WriteLine(ex.Message);
                     Console.WriteLine("Supported formats: " +

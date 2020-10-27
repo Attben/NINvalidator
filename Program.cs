@@ -4,6 +4,10 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
 {
     class Program
     {
+        //Turns out the current year is used in a couple of places.
+        //I don't think I'm allowed to use any Date methods, so I just hardcoded it.
+        const int CURRENT_YEAR = 2020;
+
         static bool IsLeapYear(int year)
         {
             if(year % 400 == 0)
@@ -49,45 +53,58 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
 
         static bool IsValidBirthYear(int year)
         {
-            //Bounds are intentionally hardcoded to match the project specification.
-            return (year >= 1753 && year <= 2020);
+            return (year >= 1753 && year <= CURRENT_YEAR);
         }
 
 
-        static void ValidateNIN(string userInput)
+        static void ValidateNIN(string NIN)
         {
-            switch (userInput.Length)
+            switch (NIN.Length)
             {
                 case 11: //10 digits plus a divider, in YYMMDD-nnnc format.
-                    //Get the divider character from the input string
-                    char divider = userInput[userInput.Length - 5];
-                    string prefix;
-                    if (divider == '-')
+                    //Get the divider character from the input string.
+                    //Its correct position is known from the format, so I've hardcoded it.
+                    int dividerPos = NIN.Length - 5;
+                    char divider = NIN[dividerPos];
+                    if(!(divider == '-' || divider == '+'))
                     {
-                        //TODO
+                        throw new FormatException("Incorrect format: User entered " +
+                            "10-digit NIN that contained unsupported divider character "
+                            + divider);
                     }
-                    break;
+                    int twoDigitBirthYear = int.Parse(NIN.Substring(0, 2)); //YY
+                    int age = (CURRENT_YEAR - twoDigitBirthYear) % 100;
+
+                    if (divider == '+')
+                    {
+                        //Divider '+' is used for people over 100.
+                        age += 100;
+                    }
+                    //Preprocessing to convert the NIN into the 12-digit format
+                    NIN = NIN.Remove(dividerPos, 1); //Remove the divider character
+                    NIN = (CURRENT_YEAR - age) + NIN.Substring(2); //Replace YY with YYYY.
+                    goto case 12; //Fallthrough and let the 12-digit case handle the heavy lifting.
                 case 12: //12 digits in YYYYMMDDnnnc format
-                    int year = int.Parse(userInput.Substring(0,4));
-                    int month = int.Parse(userInput.Substring(4, 2));
-                    int day = int.Parse(userInput.Substring(6, 2));
-                    int ID = int.Parse(userInput.Substring(8, 3));
-                    int checksum = int.Parse(userInput.Substring(11));
+                    int year = int.Parse(NIN.Substring(0,4)); //YYYY
+                    int month = int.Parse(NIN.Substring(4, 2)); //MM
+                    int day = int.Parse(NIN.Substring(6, 2)); //DD
+                    int ID = int.Parse(NIN.Substring(8, 3)); //nnn
+                    int checksum = int.Parse(NIN.Substring(11)); //c
                     string legalGender = LegalGenderFromID(ID);
 
                     if (
                         IsValidBirthYear(year) &&
                         IsValidBirthMonth(month) &&
                         IsValidBirthDay(year, month, day) &&
-                        LuhnChecksum(userInput.Substring(2)) == checksum 
+                        LuhnChecksum(NIN.Substring(2)) == checksum 
                         )
                     {
-                        Console.WriteLine(userInput + " Is a valid NIN. ✔");
+                        Console.WriteLine(NIN + " Is a valid NIN. ✔");
                         Console.WriteLine("Legally, the owner of this NIN is considered " + legalGender);
                     }
                     else
                     {
-                        Console.WriteLine(userInput + " Is an INVALID NIN. 🚫");
+                        Console.WriteLine(NIN + " Is an INVALID NIN. 🚫");
                     }
                     break;
                 default:

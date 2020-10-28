@@ -56,7 +56,6 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
             return (year >= 1753 && year <= CURRENT_YEAR);
         }
 
-
         static void ValidateNIN(string NIN)
         {
             switch (NIN.Length)
@@ -79,11 +78,13 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                     if (divider == '+')
                     {
                         //Divider '+' is used for people over 100.
-                        age += 100;
+                        age += 100; //Note that this implicitly assumes age < 200.
                     }
                     //Preprocessing to convert the NIN into the 12-digit format
+                    string oldNIN = NIN;
                     NIN = NIN.Remove(dividerPos, 1); //Remove the divider character
                     NIN = (CURRENT_YEAR - age) + NIN.Substring(2); //Replace YY with YYYY.
+                    Console.WriteLine("Converting " + oldNIN + " into equivalent 12 digit form " + NIN);
                     goto case 12; //Fallthrough and let the 12-digit case handle the heavy lifting.
                 case 12: //12 digits in YYYYMMDDnnnc format
                     int year = int.Parse(NIN.Substring(0, 4)); //YYYY
@@ -142,7 +143,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
                 try
                 {
                     Console.Write("Enter a National Identification Number (personnummer)" +
-                        "or enter \"quit\" to quit: ");
+                        " or enter \"quit\" to quit: ");
                     string input = Console.ReadLine();
                     if (input == "quit")
                     {

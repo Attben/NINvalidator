@@ -135,7 +135,7 @@ namespace NINvalidator //NIN: National Identification Number (approx. "personnum
             return (10 - (sum % 10)) % 10;
         }
 
-        static void Main(string[] args)
+        static void Main()
         {
             bool running = true;
             do
